@@ -39,9 +39,19 @@ function summarizeRequirements(text) {
     // Simple keyword-based extraction (could be expanded to use NLP)
     const lines = text.split('\n');
     const keywords = ['required', 'must', 'experience', 'skills', 'qualification'];
+    const yearOfExperienceKeywords = ['years of experience', 'year of experience']
+
     const summary = lines.filter(line => {
-        return keywords.some(keyword => line.toLowerCase().includes(keyword));
+        return keywords.some(keyword => line.toLowerCase().includes(keyword.toLowerCase()));
     });
-    return summary.join('\n');
+
+    const yearOfExperienceRequired = summary.filter(line => {
+        return yearOfExperienceKeywords.some(keyword => line.toLowerCase().includes(keyword.toLowerCase()));
+    });
+
+    return JSON.stringify({
+        "summary": summary.join('\n'),
+        "Requriments": { 'YoE': yearOfExperienceRequired.length ? yearOfExperienceRequired.join('\n') : "Not Mentioned" }
+    });
 }
 
