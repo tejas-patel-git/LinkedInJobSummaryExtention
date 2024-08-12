@@ -1,64 +1,34 @@
-// Wait for the page to load and then scrape the job requirements
-// if (document.readyState !== 'loading') {
-//     console.log('document is already ready, just execute code here');
-//     DoJob();
-// }
-// else {
-//     document.addEventListener('DOMContentLoaded', DoJob);
-// }
 window.addEventListener('load', () => {
-    console.log("IN EXTENSION");
-    // const jobDescriptionElement = document.getElementById('job-details'); // LinkedIn's job description element
-    const jobDescriptionElement = document.querySelector("#job-details > div");
-    console.log("Check Element");
-    console.log(jobDescriptionElement ? jobDescriptionElement : "NOT FOUND");
+    // Initialize the MutationObserver
+    const observer = new MutationObserver(mutations => {
+        for (let mutation of mutations) {
+            if (mutation.type === 'childList' || mutation.type === 'subtree') {
+                // When the job details are updated, get the new job description
+                updateJobSummary();
+                break;
+            }
+        }
+    });
 
-    // const jobDescription = extractText(jobDescriptionElement);
-    const jobDescription = jobDescriptionElement.innerText;
-    console.log(jobDescription);
-    // chrome.runtime.sendMessage({ action: 'summarize', text: jobDescription });
-    const summary = summarizeRequirements(jobDescription);
-    console.log("Summaryyyy");
-    console.log(summary);
-    chrome.storage.local.set({ summary: summary });
+    // Target the job details container
+    const jobContainer = document.querySelector("#job-details");
+
+    if (jobContainer) {
+        observer.observe(jobContainer, { childList: true, subtree: true });
+    }
+
+    // Initial summary update
+    updateJobSummary();
 });
 
-function DoJob() {
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log("IN EXTENSION");
-        // const jobDescriptionElement = document.getElementById('job-details'); // LinkedIn's job description element
-        const jobDescriptionElement = document.querySelector("#job-details > div");
-        console.log("Check Element");
-        console.log(jobDescriptionElement ? jobDescriptionElement : "NOT FOUND");
-
-        // const jobDescription = extractText(jobDescriptionElement);
+function updateJobSummary() {
+    const jobDescriptionElement = document.querySelector("#job-details > div");
+    if (jobDescriptionElement) {
         const jobDescription = jobDescriptionElement.innerText;
-        console.log(jobDescription);
-        // chrome.runtime.sendMessage({ action: 'summarize', text: jobDescription });
         const summary = summarizeRequirements(jobDescription);
-        console.log("Summaryyyy");
-        console.log(summary);
         chrome.storage.local.set({ summary: summary });
-    });
-    // setTimeout(() => {
-    //     console.log("IN EXTENSION");
-    //     // const jobDescriptionElement = document.getElementById('job-details'); // LinkedIn's job description element
-    //     const jobDescriptionElement = document.querySelector("#job-details > div");
-    //     console.log("Check Element");
-    //     console.log(jobDescriptionElement ? jobDescriptionElement : "NOT FOUND");
-
-    //     // const jobDescription = extractText(jobDescriptionElement);
-    //     const jobDescription = jobDescriptionElement.innerText;
-    //     console.log(jobDescription);
-    //     // chrome.runtime.sendMessage({ action: 'summarize', text: jobDescription });
-    //     const summary = summarizeRequirements(jobDescription);
-    //     console.log("Summaryyyy");
-    //     console.log(summary);
-    //     chrome.storage.local.set({ summary: summary });
-    // }, 5000);
-
+    }
 }
-
 
 /**
  * 
@@ -75,23 +45,3 @@ function summarizeRequirements(text) {
     return summary.join('\n');
 }
 
-/**
- * Recursively extracts and concatenates text from an HTML element and its child nodes.
- * @param {Element} element - The HTML element to extract text from.
- * @returns {string} The extracted text.
- */
-function extractText(element) {
-    let text = '';
-
-    // Traverse child nodes
-    element.childNodes.forEach(node => {
-        if (node.nodeType === Node.TEXT_NODE) {
-            text += node.textContent.trim() + ' ';
-            console.log(text);
-        } else if (node.nodeType === Node.ELEMENT_NODE) {
-            text += extractText(node);
-        }
-    }); document.querySelector("#job-details > div")
-
-    return text;
-}
