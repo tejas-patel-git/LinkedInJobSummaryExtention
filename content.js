@@ -39,19 +39,26 @@ function summarizeRequirements(text) {
     // Simple keyword-based extraction (could be expanded to use NLP)
     const lines = text.split('\n');
     const keywords = ['required', 'must', 'experience', 'skills', 'qualification'];
-    const yearOfExperienceKeywords = ['years of experience', 'year of experience']
+    const yearOfExperienceKeywords = ['years of experience', 'year of experience', 'experience']
 
     const summary = lines.filter(line => {
         return keywords.some(keyword => line.toLowerCase().includes(keyword.toLowerCase()));
     });
 
-    const yearOfExperienceRequired = summary.filter(line => {
-        return yearOfExperienceKeywords.some(keyword => line.toLowerCase().includes(keyword.toLowerCase()));
-    });
-
+    const yearOfExperienceRequired = extractRequiredYearOfExp(summary);
+    console.log(yearOfExperienceRequired);
     return JSON.stringify({
         "summary": summary.join('\n'),
-        "Requriments": { 'YoE': yearOfExperienceRequired.length ? yearOfExperienceRequired.join('\n') : "Not Mentioned" }
+        "Requriments": { 'YoE': yearOfExperienceRequired ? yearOfExperienceRequired[0] : "Not Mentioned" }
     });
 }
 
+/**
+ * 
+ * @param {string[]} lines
+ * @returns {RegExpMatchArray | null}
+ */
+function extractRequiredYearOfExp(lines) {
+    const regExp = /\b(\d+)\s*(?:\+|-)?\s*(\d+)?\s*years?\s*(?:of\s+)?(?:relevant\s+)?experience\b/i;
+    return lines.join().match(regExp);
+}
